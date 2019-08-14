@@ -6,7 +6,7 @@ IFS=$'\n\t'
 # -o: prevents errors in a pipeline from being masked
 # IFS new value is less likely to cause confusing bugs when looping arrays or arguments (e.g. $@)
 
-usage() { echo "Usage: $0 -i <subscriptionId> -l <location> -g <resourceGroupName> -D <deployName>" 1>&2; exit 1; }
+usage() { echo "Usage: $0 -i <subscriptionId> -l <location> -g <resourceGroupName> -D <deployName> -d <true|false>" 1>&2; exit 1; }
 
 # Variables
 declare subscriptionId=""
@@ -27,7 +27,7 @@ while getopts ":i:d:l:g:D:" arg; do
 			subscriptionId=${OPTARG}
 			;;
 		d)
-			debug="true"
+			debug=${OPTARG}
 			;;
 		l)
 			location=${OPTARG}
@@ -114,7 +114,7 @@ if [ $? != 0 ]; then
 		az deployment create --name $deployName --location $location --template-file "$PWD/$rgFilePath/deploy.json" --parameters "$PWD/${rgFilePath}/parameters.json" 1> /dev/null
 	)
 	else
-	echo "Using existing resource group... $deploy"
+	echo "Using existing resource group..."
 fi
 if [ $? != 0 ];
 then
