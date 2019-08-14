@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "location": {
+        "value": "uksouth"
+      },
+      "keyVaultName": {
+        "value": "rmorilha-keyvault"
+      },
+      "objectId": {
+        "value": "GEN-AZUREAD-OBJECTID"
+      },
+      "secretName": {
+        "value": "rmorilha-secret"
+      },
+      "secretValue": {
+        "value": "P@$$Wd"
+      },
+      "enabledForDeployment": {
+        "value": true
+      },
+      "enabledForDiskEncryption": {
+        "value": true
+      },
+      "skuName": {
+        "value": "Standard"
+      },
+      "tagone": {
+        "value": "rmorilha-nl"
+      }
+    }
+  }

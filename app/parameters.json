@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "location": {
+        "value": "uksouth"
+      },
+      "tagone": {
+        "value": "rmorilha-nl"
+      },
+      "app_sku_name": {
+        "value": "Standard_DS1_v2"
+        },
+        "app_sku_tier": {
+            "value": "Standard"
+        },
+        "vnet_name": {
+            "value": "rmorilhaVnet"
+        },
+        "vmss_name": {
+            "value": "rmorilhaVmss"
+        },
+        "app_admin_user": {
+            "value": "rmorilha"
+        },
+        "app_admin_key": {
+            "value": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCkOd/LM3n1jQLXiqaM/+QvVGr6+zqmbX+xhSY5bdcdw8qrHCfX0A2wW1LDcT4R6xMYYGdbmq3Et5NzgvH0f6mUJl6u6tmngKAIAOhK8QzqiIAjB7wxZfGQkgQrIIOXz9LpTYbge6CLLBRMNf4qMqjriKUjP1fwNKtsoe5ZambrI1cWUTUefa4JoRz0Px2n+kAZZHb0GZeLhO0xmKy07wGYwzwz2UVd6kfPqPsgocH9NjmZRzjzkY3vZHj9MDgjN2l/Ts+VtZwU1cydH+N/LE8jAAe9xJA+vYk+d7z/U0XwZq04fTG7lk1pANuzsXP00Zr0hIHlZaOX+4SQ90bm2PsZ renan@GOKU"
+        },
+        "lb_backend_name": {
+            "value": "rmorilha-lb-back"
+        }
+    }
+}

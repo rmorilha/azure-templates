@@ -1,0 +1,27 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "uksouth"
+    },
+    "tagone": {
+      "value": "rmorilha-nl"
+    },
+    "storage_name": {
+      "value": "rmorilhastorage"
+    },
+    "vnet_name": {
+      "value": "rmorilha-vnet"
+    },
+    "storage_sku_name": {
+      "value": "Standard_LRS"
+    },
+    "rgname": {
+      "value": "rmorilha-rg"
+    },
+    "storage_sku_tier": {
+      "value": "Standard"
+    }
+  }
+}

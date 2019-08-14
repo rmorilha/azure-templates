@@ -1,0 +1,564 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "subnetid": {
+            "type": "string"
+        },
+        "inboundid": {
+            "type": "string"
+        },
+        "backendid": {
+            "type": "string"
+        },
+        "networkSG_name": {
+            "type": "string",
+            "metadata": {
+                "description": "Defines the SecurityGroup Name"
+            }
+          },
+          "tagone": {
+            "type": "string",
+            "defaultValue": "project",
+            "metadata": {
+                "description": "Defines the value tag for the project"
+            }
+          },
+          "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Defines location for the project"
+            }
+          },
+          "publicIP_name": {
+            "type": "string",
+            "metadata": {
+                "description": "Defines the PublicIP resource name"
+            }
+          },
+          "publicIP_sku_name": {
+            "type": "string",
+            "metadata": {
+                "description": "Defines the PublicIP resource SKU type"
+            }
+          },
+          "publicIP_sku_tier": {
+            "type": "string",
+            "metadata": {
+                "description": "Defines the PublicIP resource SKU tier"
+            } 
+          },
+          "lb_name": {
+            "type": "string",
+            "metadata": {
+                "description": "Defines the LoadBalancer resource name"
+            }
+          },
+          "lb_sku_name": {
+            "type": "string",
+            "metadata": {
+                "description": "Defines the LoadBalancer SKU type"
+            }
+          },
+          "lb_sku_tier": {
+            "type": "string",
+            "metadata": {
+                "description": "Defines the LoadBalancer SKU tier"
+            }
+          },
+          "lb_frontend_name": {
+            "type": "string",
+            "metadata": {
+                "description": "Defines the LoadBalancer FrontEnd name"
+            }
+          },
+          "lb_backend_name": {
+            "type": "string",
+            "metadata": {
+                "description": "Defines the LoadBalancer BackEnd pool name"
+            }
+          },
+          "lb_privateIPAllocationMethod": {
+            "type": "string",
+            "defaultValue": "Dynamic",
+            "metadata": {
+                "description": "Defines the LoadBalancer IP allocation method"
+            }
+          },
+          "lb_privateIPAddressVersion": {
+            "type": "string",
+            "defaultValue": "IPv4",
+            "metadata": {
+                "description": "Defines the LoadBalancer IP addr version (IPv6 or IPv4)"
+            }
+          },
+          "lb_rules_name": {
+            "type": "string",
+            "metadata": {
+                "description": "Defines the LoadBalancer Rules name"
+            }
+          },
+          "lb_probes_name": {
+            "type": "string",
+            "metadata": {
+                "description": "Defines the LoadBalancer probes name"
+            }
+          },
+          "vnet_name": {
+            "type": "string",
+            "metadata": {
+                "description": "Defines the VNet name"
+            }
+          },
+          "vnet_addr_space": {
+            "type": "string",
+            "defaultValue": "192.168.0.0/24",
+            "metadata": {
+                "description": "Defines the VNet CIDR space for subnets"
+            }
+          },
+          "vnet_addr_subnet": {
+            "type": "string",
+            "defaultValue": "192.168.0.0/24",
+            "metadata": {
+                "description": "Defines the VNet subnet CIDR"
+            }
+          }
+        },
+        "variables": {},
+        "resources": [
+            {
+                "type": "Microsoft.Network/networkSecurityGroups",
+                "apiVersion": "2019-06-01",
+                "name": "[parameters('networkSG_name')]",
+                "location": "[parameters('location')]",
+                "tags": {
+                    "project": "[parameters('tagone')]"
+                },
+                "properties": {
+                    "securityRules": [
+                        {
+                            "name": "allowSSH",
+                            "properties": {
+                                "description": "Allow SSH traffic",
+                                "protocol": "Tcp",
+                                "sourcePortRange": "*",
+                                "destinationPortRange": "22",
+                                "sourceAddressPrefix": "*",
+                                "destinationAddressPrefix": "*",
+                                "access": "Allow",
+                                "priority": 1000,
+                                "direction": "Inbound",
+                                "sourcePortRanges": [],
+                                "destinationPortRanges": [],
+                                "sourceAddressPrefixes": [],
+                                "destinationAddressPrefixes": []
+                            }
+                        },
+                        {
+                            "name": "allowHTTP",
+                            "properties": {
+                                "description": "Allow web traffic",
+                                "protocol": "Tcp",
+                                "sourcePortRange": "*",
+                                "destinationPortRange": "80",
+                                "sourceAddressPrefix": "*",
+                                "destinationAddressPrefix": "*",
+                                "access": "Allow",
+                                "priority": 1001,
+                                "direction": "Inbound",
+                                "sourcePortRanges": [],
+                                "destinationPortRanges": [],
+                                "sourceAddressPrefixes": [],
+                                "destinationAddressPrefixes": []
+                            }
+                        }
+                    ],
+                    "defaultSecurityRules": [
+                        {
+                            "name": "AllowVnetInBound",
+                            "properties": {
+                                "description": "Allow inbound traffic from all VMs in VNET",
+                                "protocol": "*",
+                                "sourcePortRange": "*",
+                                "destinationPortRange": "*",
+                                "sourceAddressPrefix": "VirtualNetwork",
+                                "destinationAddressPrefix": "VirtualNetwork",
+                                "access": "Allow",
+                                "priority": 65000,
+                                "direction": "Inbound",
+                                "sourcePortRanges": [],
+                                "destinationPortRanges": [],
+                                "sourceAddressPrefixes": [],
+                                "destinationAddressPrefixes": []
+                            }
+                        },
+                        {
+                            "name": "AllowAzureLoadBalancerInBound",
+                            "properties": {
+                                "description": "Allow inbound traffic from azure load balancer",
+                                "protocol": "*",
+                                "sourcePortRange": "*",
+                                "destinationPortRange": "*",
+                                "sourceAddressPrefix": "AzureLoadBalancer",
+                                "destinationAddressPrefix": "*",
+                                "access": "Allow",
+                                "priority": 65001,
+                                "direction": "Inbound",
+                                "sourcePortRanges": [],
+                                "destinationPortRanges": [],
+                                "sourceAddressPrefixes": [],
+                                "destinationAddressPrefixes": []
+                            }
+                        },
+                        {
+                            "name": "DenyAllInBound",
+                            "properties": {
+                                "description": "Deny all inbound traffic",
+                                "protocol": "*",
+                                "sourcePortRange": "*",
+                                "destinationPortRange": "*",
+                                "sourceAddressPrefix": "*",
+                                "destinationAddressPrefix": "*",
+                                "access": "Deny",
+                                "priority": 65500,
+                                "direction": "Inbound",
+                                "sourcePortRanges": [],
+                                "destinationPortRanges": [],
+                                "sourceAddressPrefixes": [],
+                                "destinationAddressPrefixes": []
+                            }
+                        },
+                        {
+                            "name": "AllowVnetOutBound",
+                            "properties": {
+                                "description": "Allow outbound traffic from all VMs to all VMs in VNET",
+                                "protocol": "*",
+                                "sourcePortRange": "*",
+                                "destinationPortRange": "*",
+                                "sourceAddressPrefix": "VirtualNetwork",
+                                "destinationAddressPrefix": "VirtualNetwork",
+                                "access": "Allow",
+                                "priority": 65000,
+                                "direction": "Outbound",
+                                "sourcePortRanges": [],
+                                "destinationPortRanges": [],
+                                "sourceAddressPrefixes": [],
+                                "destinationAddressPrefixes": []
+                            }
+                        },
+                        {
+                            "name": "AllowInternetOutBound",
+                            "properties": {
+                                "description": "Allow outbound traffic from all VMs to Internet",
+                                "protocol": "*",
+                                "sourcePortRange": "*",
+                                "destinationPortRange": "*",
+                                "sourceAddressPrefix": "*",
+                                "destinationAddressPrefix": "Internet",
+                                "access": "Allow",
+                                "priority": 65001,
+                                "direction": "Outbound",
+                                "sourcePortRanges": [],
+                                "destinationPortRanges": [],
+                                "sourceAddressPrefixes": [],
+                                "destinationAddressPrefixes": []
+                            }
+                        },
+                        {
+                            "name": "DenyAllOutBound",
+                            "properties": {
+                                "description": "Deny all outbound traffic",
+                                "protocol": "*",
+                                "sourcePortRange": "*",
+                                "destinationPortRange": "*",
+                                "sourceAddressPrefix": "*",
+                                "destinationAddressPrefix": "*",
+                                "access": "Deny",
+                                "priority": 65500,
+                                "direction": "Outbound",
+                                "sourcePortRanges": [],
+                                "destinationPortRanges": [],
+                                "sourceAddressPrefixes": [],
+                                "destinationAddressPrefixes": []
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "Microsoft.Network/publicIPAddresses",
+                "apiVersion": "2019-06-01",
+                "name": "[parameters('publicIP_name')]",
+                "location": "[parameters('location')]",
+                "tags": {
+                    "project": "[parameters('tagone')]"
+                },
+                "sku": {
+                    "name": "[parameters('publicIP_sku_name')]",
+                    "tier": "[parameters('publicIP_sku_tier')]"
+                },
+                "properties": {
+                    "publicIPAddressVersion": "IPv4",
+                    "publicIPAllocationMethod": "Static",
+                    "idleTimeoutInMinutes": 4,
+                    "dnsSettings": {
+                        "domainNameLabel": "[parameters('publicIP_name')]",
+                        "fqdn": "[concat(concat(parameters('publicIP_name'), '.'), concat(parameters('location'),'.cloudapp.azure.com'))]"
+                    },
+                    "ipTags": []
+                }
+            },
+            {
+                "type": "Microsoft.Network/loadBalancers",
+                "apiVersion": "2019-06-01",
+                "name": "[parameters('lb_name')]",
+                "location": "[parameters('location')]",
+                "tags": {
+                    "project": "[parameters('tagone')]"
+                },
+                "dependsOn": [
+                    "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIP_name'))]"
+                ],
+                "sku": {
+                    "name": "[parameters('lb_sku_name')]",
+                    "tier": "[parameters('lb_sku_tier')]"
+                },
+                "properties": {
+                    "frontendIPConfigurations": [
+                        {
+                            "name": "[parameters('lb_frontend_name')]",
+                            "properties": {
+                                "privateIPAllocationMethod": "[parameters('lb_privateIPAllocationMethod')]",
+                                "publicIPAddress": {
+                                    "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIP_name'))]"
+                                },
+                                "privateIPAddressVersion": "[parameters('lb_privateIPAddressVersion')]"
+                            }
+                        }
+                    ],
+                    "backendAddressPools": [
+                        {
+                            "name": "[parameters('lb_backend_name')]",
+                            "properties": {
+                            }
+                        }
+                    ],
+                    "loadBalancingRules": [
+                        {
+                            "name": "[parameters('lb_rules_name')]",
+                            "properties": {
+                                "frontendIPConfiguration": {
+                                    "id": "[concat(concat(resourceId('Microsoft.Network/loadBalancers', parameters('lb_name')), '/frontendIPConfigurations/'),parameters('lb_frontend_name'))]"
+                                },
+                                "frontendPort": 80,
+                                "backendPort": 80,
+                                "enableFloatingIP": false,
+                                "idleTimeoutInMinutes": 5,
+                                "protocol": "Tcp",
+                                "enableTcpReset": false,
+                                "loadDistribution": "Default",
+                                "disableOutboundSnat": false,
+                                "backendAddressPool": {
+                                    "id": "[concat(concat(resourceId('Microsoft.Network/loadBalancers', parameters('lb_name')), '/backendAddressPools/'),parameters('lb_backend_name'))]"
+                                },
+                                "probe": {
+                                    "id": "[concat(concat(resourceId('Microsoft.Network/loadBalancers', parameters('lb_name')), '/probes/'),parameters('lb_probes_name'))]"
+                                }
+                            }
+                        }
+                    ],
+                    "probes": [
+                        {
+                            "name": "[parameters('lb_probes_name')]",
+                            "properties": {
+                                "protocol": "Tcp",
+                                "port": 80,
+                                "intervalInSeconds": 5,
+                                "numberOfProbes": 2
+                            }
+                        }
+                    ],
+                    "inboundNatRules": [
+                        
+                    ],
+                    "outboundRules": [],
+                    "inboundNatPools": [
+                        {
+                            "name": "natpool",
+                            "properties": {
+                                "frontendPortRangeStart": 50000,
+                                "frontendPortRangeEnd": 50119,
+                                "backendPort": 22,
+                                "protocol": "Tcp",
+                                "idleTimeoutInMinutes": 4,
+                                "enableFloatingIP": false,
+                                "enableTcpReset": false,
+                                "frontendIPConfiguration": {
+                                    "id": "[concat(concat(resourceId('Microsoft.Network/loadBalancers', parameters('lb_name')), '/frontendIPConfigurations/'),parameters('lb_frontend_name'))]"
+                                }
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+                "apiVersion": "2019-06-01",
+                "name": "[concat(parameters('networkSG_name'), '/allowHTTP')]",
+                "dependsOn": [
+                    "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSG_name'))]"
+                ],
+                "properties": {
+                    "description": "Allow web traffic",
+                    "protocol": "Tcp",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "80",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 1001,
+                    "direction": "Inbound",
+                    "sourcePortRanges": [],
+                    "destinationPortRanges": [],
+                    "sourceAddressPrefixes": [],
+                    "destinationAddressPrefixes": []
+                }
+            },
+            {
+                "type": "Microsoft.Network/networkSecurityGroups/securityRules",
+                "apiVersion": "2019-06-01",
+                "name": "[concat(parameters('networkSG_name'), '/allowSSH')]",
+                "dependsOn": [
+                    "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSG_name'))]"
+                ],
+                "properties": {
+                    "description": "Allow SSH traffic",
+                    "protocol": "Tcp",
+                    "sourcePortRange": "*",
+                    "destinationPortRange": "22",
+                    "sourceAddressPrefix": "*",
+                    "destinationAddressPrefix": "*",
+                    "access": "Allow",
+                    "priority": 1000,
+                    "direction": "Inbound",
+                    "sourcePortRanges": [],
+                    "destinationPortRanges": [],
+                    "sourceAddressPrefixes": [],
+                    "destinationAddressPrefixes": []
+                }
+            },
+            {
+                "type": "Microsoft.Network/virtualNetworks",
+                "apiVersion": "2019-06-01",
+                "name": "[parameters('vnet_name')]",
+                "location": "[parameters('location')]",
+                "tags": {
+                    "project": "[parameters('tagone')]"
+                },
+                "dependsOn": [
+                    "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSG_name'))]"
+                ],
+                "properties": {
+                    "addressSpace": {
+                        "addressPrefixes": [
+                            "[parameters('vnet_addr_space')]"
+                        ]
+                    },
+                    "subnets": [
+                        {
+                            "name": "internal",
+                            "properties": {
+                                "addressPrefix": "[parameters('vnet_addr_subnet')]",
+                                "networkSecurityGroup": {
+                                    "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSG_name'))]"
+                                },
+                                "serviceEndpoints": [
+                                    {
+                                        "service": "Microsoft.Storage",
+                                        "locations": [
+                                            "[parameters('location')]",
+                                            "ukwest"
+                                        ]
+                                    },
+                                    {
+                                        "service": "Microsoft.KeyVault",
+                                        "locations": [
+                                            "*"
+                                        ]
+                                    },
+                                    {
+                                        "service": "Microsoft.Web",
+                                        "locations": [
+                                            "*"
+                                        ]
+                                    }
+                                ],
+                                "delegations": [],
+                                "privateEndpointNetworkPolicies": "Enabled",
+                                "privateLinkServiceNetworkPolicies": "Enabled"
+                            }
+                        }
+                    ],
+                    "virtualNetworkPeerings": [],
+                    "enableDdosProtection": false,
+                    "enableVmProtection": false
+                }
+            },
+            {
+                "type": "Microsoft.Network/virtualNetworks/subnets",
+                "apiVersion": "2019-06-01",
+                "name": "[concat(parameters('vnet_name'), '/internal')]",
+                "dependsOn": [
+                    "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnet_name'))]",
+                    "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSG_name'))]"
+                ],
+                "location": "[parameters('location')]",
+                "properties": {
+                    "addressPrefix": "[parameters('vnet_addr_subnet')]",
+                    "networkSecurityGroup": {
+                        "id": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('networkSG_name'))]"
+                    },
+                    "serviceEndpoints": [
+                        {
+                            "service": "Microsoft.Storage",
+                            "locations": [
+                                "[parameters('location')]",
+                                "ukwest"
+                            ]
+                        },
+                        {
+                            "service": "Microsoft.KeyVault",
+                            "locations": [
+                                "*"
+                            ]
+                        },
+                        {
+                            "service": "Microsoft.Web",
+                            "locations": [
+                                "*"
+                            ]
+                        }
+                    ],
+                    "delegations": [],
+                    "privateEndpointNetworkPolicies": "Enabled",
+                    "privateLinkServiceNetworkPolicies": "Enabled"
+                }
+            }
+        ],
+    "outputs": {
+        "subnetid": {
+            "type": "string",
+            "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnet_name'), 'internal')]"
+        },
+        "inboundid": {
+            "type": "string",
+            "value": "[concat(resourceId('Microsoft.Network/loadBalancers', parameters('lb_name')), '/inboundNatPools/natpool')]"
+        },
+        "backendid": {
+            "type": "string",
+            "value": "[concat(concat(resourceId('Microsoft.Network/loadBalancers', parameters('lb_name')), '/backendAddressPools/'),parameters('lb_backend_name'))]"
+        }
+    }
+}

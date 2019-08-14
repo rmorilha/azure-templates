@@ -1,0 +1,84 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "location": {
+        "value": "uksouth"
+      },
+      "tagone": {
+        "value": "rmorilha-nl"
+      },
+      "networkSG_name": {
+        "value": "rmorilha-nsg"
+      },
+      "publicIP_name": {
+        "value": "rmorilha-pubip"
+      },
+      "publicIP_sku_name": {
+        "value": "standard"
+      },
+      "publicIP_sku_tier": {
+        "value": "regional"
+      },
+      "lb_name": {
+        "value": "rmorilha-lb"
+      },
+      "lb_sku_name": {
+        "value": "standard"
+      },
+      "lb_sku_tier": {
+        "value": "regional"
+      },
+      "lb_frontend_name": {
+        "value": "rmorilha-lb-front"
+      },
+      "lb_backend_name": {
+        "value": "rmorilha-lb-back"
+      },
+      "lb_privateIPAllocationMethod": {
+        "value": "Dynamic"
+      },
+      "lb_privateIPAddressVersion": {
+        "value": "IPv4"
+      },
+      "lb_rules_name": {
+        "value": "rmorilhaRules"
+      },
+      "lb_probes_name": {
+        "value": "rmorilhaProbe"
+      },
+      "vnet_name": {
+        "value": "rmorilhaVnet"
+      },
+      "vnet_addr_space": {
+        "value": "172.81.238.0/24"
+      },
+      "vnet_addr_subnet": {
+        "value": "172.81.238.0/24"
+      },
+      "app_sku_name": {
+        "value": "Standard_DS1_v2"
+      },
+      "app_sku_tier": {
+          "value": "Standard"
+      },
+      "vmss_name": {
+          "value": "rmorilhaVmss"
+      },
+      "app_admin_user": {
+          "value": "rmorilha"
+      },
+      "app_admin_key": {
+          "value": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCkOd/LM3n1jQLXiqaM/+QvVGr6+zqmbX+xhSY5bdcdw8qrHCfX0A2wW1LDcT4R6xMYYGdbmq3Et5NzgvH0f6mUJl6u6tmngKAIAOhK8QzqiIAjB7wxZfGQkgQrIIOXz9LpTYbge6CLLBRMNf4qMqjriKUjP1fwNKtsoe5ZambrI1cWUTUefa4JoRz0Px2n+kAZZHb0GZeLhO0xmKy07wGYwzwz2UVd6kfPqPsgocH9NjmZRzjzkY3vZHj9MDgjN2l/Ts+VtZwU1cydH+N/LE8jAAe9xJA+vYk+d7z/U0XwZq04fTG7lk1pANuzsXP00Zr0hIHlZaOX+4SQ90bm2PsZ renan@GOKU"
+      },
+      "vmss_sku_name": {
+          "value": "Standard_DS1_v2"
+      },
+      "vmss_sku_tier": {
+          "value": "Standard"
+      },
+      "app_prefix": {
+          "value": "rmorilhav"
+      }
+    }
+  }

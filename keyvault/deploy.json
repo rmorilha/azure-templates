@@ -1,0 +1,110 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "keyVaultName": {
+        "type": "string",
+        "metadata": {
+          "description": "Defines the key-vault's name"
+        }
+      },
+      "tagone": {
+        "type": "string",
+        "defaultValue": "project",
+        "metadata": {
+            "description": "Defines the value tag for the project"
+        }
+      },
+      "location": {
+          "type": "string",
+          "defaultValue": "[resourceGroup().location]",
+          "metadata": {
+              "description": "Defines location for the project"
+          }
+      },
+      "enabledForDeployment": {
+        "type": "bool",
+        "defaultValue": false,
+        "metadata": {
+          "description": "Defines whether Azure Virtual Machines are permitted to retrieve certificates stored as secrets from the key vault."
+        }
+      },
+      "enabledForDiskEncryption": {
+        "type": "bool",
+        "defaultValue": true,
+        "metadata": {
+          "description": "Defines whether Azure Disk Encryption is permitted to retrieve secrets from the vault and unwrap keys."
+        }
+      },
+      "enabledForTemplateDeployment": {
+        "type": "bool",
+        "defaultValue": true,
+        "metadata": {
+          "description": "Defines whether ARM is permitted to retrieve secrets from the key vault."
+        }
+      },
+      "skuName": {
+        "type": "string",
+        "defaultValue": "Standard",
+        "metadata": {
+          "description": "Defines whether the key vault is a standard vault or a premium vault."
+        }
+      },
+      "secretName": {
+        "type": "string",
+        "metadata": {
+          "description": "Defines the name of the secret that you want to create."
+        }
+      },
+      "secretValue": {
+        "type": "securestring",
+        "metadata": {
+          "description": "Defines the value of the secret that you want to create."
+        }
+      }
+    },
+    "variables": { },
+    "resources": [
+      {
+        "type": "Microsoft.KeyVault/vaults",
+        "name": "[parameters('keyVaultName')]",
+        "apiVersion": "2018-02-14",
+        "location": "[parameters('location')]",
+        "tags": {
+            "project": "[parameters('tagone')]"
+        },
+        "properties": {
+          "enabledForDeployment": "[parameters('enabledForDeployment')]",
+          "enabledForDiskEncryption": "[parameters('enabledForDiskEncryption')]",
+          "enabledForTemplateDeployment": "[parameters('enabledForTemplateDeployment')]",
+          "tenantId": "[subscription().tenantId]",
+          "accessPolicies": [],
+          "sku": {
+            "name": "[parameters('skuName')]",
+            "family": "A"
+          },
+          "networkAcls": {
+            "value": {
+              "defaultAction": "Allow",
+              "bypass": "AzureServices"
+            }
+          }
+        }
+      },
+      {
+        "type": "Microsoft.KeyVault/vaults/secrets",
+        "name": "[concat(parameters('keyVaultName'), '/', parameters('secretName'))]",
+        "apiVersion": "2018-02-14",
+        "location": "[parameters('location')]",
+        "tags": {
+            "project": "[parameters('tagone')]"
+        },
+        "dependsOn": [
+          "[resourceId('Microsoft.KeyVault/vaults', parameters('keyVaultName'))]"
+        ],
+        "properties": {
+          "value": "[parameters('secretValue')]"
+        }
+      }
+    ]
+  }

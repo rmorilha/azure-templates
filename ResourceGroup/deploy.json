@@ -1,0 +1,40 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+    "contentVersion": "1.0.0.1",
+    "parameters": {
+        "rgname": {
+            "type": "string",
+            "defaultValue": "rmorilha-rg",
+            "metadata": {
+                "description": "Defines Resource Group Name"
+            }
+        },
+        "tagone": {
+            "type": "string",
+            "defaultValue": "project",
+            "metadata": {
+                "description": "Defines the value tag for the project"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Defines location for the project"
+            }
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "type": "Microsoft.Resources/resourceGroups",
+            "apiVersion": "2018-05-01",
+            "location": "[parameters('location')]",
+            "tags": {
+                "project": "[parameters('tagone')]"
+            },
+            "name": "[parameters('rgname')]",
+            "properties": {}
+        }
+    ]
+}

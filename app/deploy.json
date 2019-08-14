@@ -1,0 +1,187 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "tagone": {
+            "type": "string",
+            "defaultValue": "project",
+            "metadata": {
+                "description": "Defines the value tag for the project"
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Defines location for the project"
+            }
+        },
+        "app_sku_name": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "metadata": {
+              "description": "Defines VMSS SKU Type."
+            }
+        },
+        "app_sku_tier": {
+            "type": "string",
+            "metadata": {
+                "description": "Defines VMSS SKU TIER"
+            }
+        },
+        "vmss_name": {
+            "type": "string",
+            "metadata": {
+                "description": "Defines VMSS name"
+            }
+        },
+        "app_admin_user": {
+            "type": "string",
+            "metadata": {
+                "description": "Defines VMSS username for VMs"
+            }
+        },
+        "app_admin_key": {
+            "type": "string",
+            "metadata": {
+                "description": "Defines the VMSS ssh pubkey for access"
+            }
+        },
+        "app_prefix": {
+            "type": "string",
+            "metadata": {
+                "description": "Defines VMSS name prefix"
+            }
+        },
+        "app_sku_capacity": {
+            "type": "int",
+            "metadata": {
+                "description": "Number of VM instances (10 or less)."
+            },
+            "defaultValue": 2,
+            "maxValue": 10
+        }
+    },
+    "variables": {
+        "templateBaseUrl": "https://my.public.repo.com/project/",
+        "vnetTemplateUrl": "[concat(variables('templateBaseUrl'), 'network.json')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Resources/deployments",
+            "apiVersion": "2018-05-01",
+            "name": "linkedTemplate",
+            "properties": {
+                "mode": "Incremental",
+                "templateLink": {
+                    "uri": "[variables('vnetTemplateUrl')]",
+                    "contentVersion": "1.0.0.0"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Compute/virtualMachineScaleSets",
+            "apiVersion": "2019-03-01",
+            "name": "[parameters('vmss_name')]",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "linkedTemplate"
+            ],
+            "tags": {
+                "project": "[parameters('tagone')]"
+            },
+            "sku": {
+                "name": "[parameters('app_sku_name')]",
+                "tier": "[parameters('app_sku_tier')]",
+                "capacity": "[parameters('app_sku_capacity')]"
+            },
+            "zones": [
+                "1",
+                "2",
+                "3"
+            ],
+            "properties": {
+                "singlePlacementGroup": false,
+                "upgradePolicy": {
+                    "mode": "Manual"
+                },
+                "virtualMachineProfile": {
+                    "osProfile": {
+                        "computerNamePrefix": "[parameters('app_prefix')]",
+                        "adminUsername": "[parameters('app_admin_user')]",
+                        "linuxConfiguration": {
+                            "disablePasswordAuthentication": true,
+                            "ssh": {
+                                "publicKeys": [
+                                    {
+                                        "path": "[concat(concat('/home/',parameters('app_admin_user')),'/.ssh/authorized_keys')]",
+                                        "keyData": "[parameters('app_admin_key')]"
+                                    }
+                                ]
+                            },
+                            "provisionVMAgent": true
+                        },
+                        "secrets": []
+                    },
+                    "storageProfile": {
+                        "osDisk": {
+                            "createOption": "FromImage",
+                            "caching": "ReadWrite",
+                            "managedDisk": {
+                                "storageAccountType": "Premium_LRS"
+                            }
+                        },
+                        "imageReference": {
+                            "publisher": "OpenLogic",
+                            "offer": "CentOS",
+                            "sku": "7.5",
+                            "version": "latest"
+                        }
+                    },
+                    "networkProfile": {
+                        "networkInterfaceConfigurations": [
+                            {
+                                "name": "[concat(parameters('vmss_name'), 'Nic')]",
+                                "properties": {
+                                    "primary": true,
+                                    "enableAcceleratedNetworking": false,
+                                    "dnsSettings": {
+                                        "dnsServers": []
+                                    },
+                                    "enableIPForwarding": false,
+                                    "ipConfigurations": [
+                                        {
+                                            "name": "[concat(parameters('vmss_name'), 'IpConfig')]",
+                                            "properties": {
+                                                "subnet": {
+                                                    "id": "[reference('linkedTemplate').outputs.subnetid.value]"
+                                                },
+                                                "privateIPAddressVersion": "IPv4",
+                                                "loadBalancerBackendAddressPools": [
+                                                    {
+                                                        "id": "[reference('linkedTemplate').outputs.backendid.value]"
+                                                    }
+                                                ],
+                                                "loadBalancerInboundNatPools": [
+                                                    {
+                                                        "id": "[reference('linkedTemplate').outputs.inboundid.value]"
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ]
+                    },
+                    "priority": "Low",
+                    "evictionPolicy": "Deallocate"
+                },
+                "overprovision": true,
+                "doNotRunExtensionsOnOverprovisionedVMs": false,
+                "zoneBalance": false,
+                "platformFaultDomainCount": 1
+            }
+        }
+    ]
+}
