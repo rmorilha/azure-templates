@@ -11,14 +11,8 @@
     "storage_name": {
       "value": "rmorilhastorage"
     },
-    "vnet_name": {
-      "value": "rmorilha-vnet"
-    },
     "storage_sku_name": {
       "value": "Standard_LRS"
-    },
-    "rgname": {
-      "value": "rmorilha-rg"
     },
     "storage_sku_tier": {
       "value": "Standard"

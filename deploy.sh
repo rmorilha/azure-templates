@@ -114,7 +114,7 @@ if [ $? != 0 ]; then
 		az deployment create --name $deployName --location $location --template-file "$PWD/$rgFilePath/deploy.json" --parameters "$PWD/${rgFilePath}/parameters.json" 1> /dev/null
 	)
 	else
-	echo "Using existing resource group..."
+	echo "Using existing resource group... $deploy"
 fi
 if [ $? != 0 ];
 then

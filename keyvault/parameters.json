@@ -8,9 +8,6 @@
       "keyVaultName": {
         "value": "rmorilha-keyvault"
       },
-      "objectId": {
-        "value": "GEN-AZUREAD-OBJECTID"
-      },
       "secretName": {
         "value": "rmorilha-secret"
       },
